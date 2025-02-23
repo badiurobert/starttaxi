@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Taxi App</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Leaflet.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        #map { height: 300px; }
+        .btn { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <!-- Map Container -->
+    <div id="map"></div>
+    <!-- Address Input -->
+    <input type="text" id="address" placeholder="Enter address">
+    <!-- Confirm Button -->
+    <button class="btn" onclick="confirmOrder()">Confirm Order</button>
+
+    <!-- Leaflet.js Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Custom JavaScript Code -->
+    <script>
+        // Variables for map and marker
+        let map;
+        let marker;
+        let selectedLocation = null;
+
+        // Initialize the map
+        function initMap() {
+            // Set map view to Voznesensk coordinates
+            map = L.map('map').setView([47.56494, 31.33078], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            // Handle map clicks
+            map.on('click', (e) => {
+                // Remove existing marker
+                if (marker) map.removeLayer(marker);
+                // Add new marker at clicked location
+                marker = L.marker(e.latlng).addTo(map);
+                // Save selected location
+                selectedLocation = e.latlng;
+            });
+        }
+
+        // Confirm order and send data to bot
+        function confirmOrder() {
+            // Get address from input field
+            const address = document.getElementById('address').value;
+            
+            // Validate input
+            if (!selectedLocation || !address) {
+                Telegram.WebApp.showAlert("Please select location and enter address!");
+                return;
+            }
+
+            // Send data to Telegram bot
+            Telegram.WebApp.sendData(JSON.stringify({
+                address: address,
+                lat: selectedLocation.lat,
+                lng: selectedLocation.lng
+            }));
+            
+            // Close the mini-app
+            Telegram.WebApp.close();
+        }
+
+        // Initialize the app
+        Telegram.WebApp.ready(); // Initialize Telegram Web App
+        Telegram.WebApp.expand(); // Expand the mini-app to full height
+        initMap(); // Initialize the map
+    </script>
+</body>
+</html>
